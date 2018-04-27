@@ -1,5 +1,5 @@
 ---
-title: "EDA Sense8"
+title: "EDA Series"
 output:
   html_notebook:
     toc: yes
@@ -15,10 +15,7 @@ library(tidyverse)
 library(here)
 theme_set(theme_bw())
 ```
-
-Analisaremos os episódios da falecida série Sense8. 
-
-Houve duas temporadas: quais foram os melhores episódios? A melhor temporada?
+Analisaremos as s??ries Black Mirror, Sherlock, American Horror Story e Penny Dreadful
 
 ```{r}
 episodes = read_csv(here("data/series_from_imdb.csv"), 
@@ -28,43 +25,59 @@ episodes = read_csv(here("data/series_from_imdb.csv"),
                                      episode = col_character(), 
                                      url = col_character(),
                                      season = col_character())) %>% 
-    filter(series_name == "Sense8") 
+    filter(series_name %in% c("Black Mirror", "Sherlock", "American Horror Story", "Penny Dreadful"))
 ```
 
-## Quantas avaliações temos por episódio? 
+## a) Qual das s??ries que voc?? escolheu ?? mais bem avaliada no IMDB?
+Para responder essa pergunta, primeiro tentaremos visualizar a distribui????o dos votos dos usu??rios  por serie.
+Podemos ver no grafico de violino abaixo que a quantidade de votos para a serie "Sherlock" e "Black Mirror" s??o maiores que as de "Penny Dreadful" e "American Horror Story". Ainda assim n??o ?? possivel definir qual delas ?? mais bem avaliada.
 
-Cada episódio foi avaliado por um número diferente de usuários do IMDB. Vejamos como é essa distribuição. 
 
 ```{r}
 episodes %>% 
-    ggplot(aes(x = season, y = user_votes)) +
+    ggplot(aes(x = series_name, y = user_votes, color = season)) +
     geom_violin() + 
     geom_jitter(width = .07) 
 ```
 
 
+J?? levando em considera????o as notas dos avaliadores temos o seguinte 
 ```{r}
-episodes %>% 
-    ggplot(aes(x = season_ep, y = user_votes))  + 
-    geom_line() + 
-    facet_wrap(~ season)
-               
-```
-
-A quantidade de avaliações varia bastante. Exceto pelo primeiro episódio, os episódios da segunda temporada tem muito menos avaliações. Talvez porque os dados foram coletados logo depois que a segunda temporada foi lançada. 
-
-## Qual a distribuição da avaliação dos episódios?
-
-```{r}
-episodes %>% 
-    ggplot(aes(x = "Sense8", y = user_rating)) + 
+ episodes %>% 
+    ggplot(aes(x = series_name, y = user_rating)) + 
     geom_jitter(width = .05) +
     ylim(5, 10) + 
-    labs(x = "Episódios", y = "Avaliação no IMDB")
+    labs(x = "Serie", y = "Avali????o no IMDB")
 ```
+
+# Aqui fazemos uma rela????o entre a quantidade de votos e as notas 
+```{r}
+episodes %>% 
+  ggplot(aes(x = user_votes, y = user_rating, color = series_name)) + 
+  geom_line() + 
+  geom_point() 
+```
+
+BoxPlot das series com a distribui??ao de notas 10 
+```{r}
+episodes %>% 
+    ggplot(aes(x = series_name, y = r10)) + 
+    geom_boxplot(width = .5, outlier.color = NA) +   
+    geom_jitter(width = .1, size = 2, alpha = .5, color = "blue")
+```
+
+
+
+
 
 ```{r}
 episodes %>% 
+   file(series_name)
+
+```
+```{r}
+episodes %>% 
+    filter(series_name == "Sherlock")%>%
     ggplot(aes(x = user_rating)) + 
     geom_histogram(binwidth = .5, fill = "pink", color = "black") + 
     geom_rug(alpha = .5, size = 1.2)
@@ -83,7 +96,7 @@ episodes %>%
     geom_vline(xintercept = sumarios$mediana, color = "brown") 
 ```
 
-### Qual é esse episódio pior avaliado? 
+### Qual ?? esse epis??dio pior avaliado? 
 
 ```{r}
 episodes %>% 
@@ -91,26 +104,7 @@ episodes %>%
 ```
 
 
-## Qual a pior/melhor temporada segundo o IMDB?
-
-```{r}
-episodes %>% 
-    ggplot(aes(x = season, y = user_rating)) + 
-    geom_boxplot(width = .5, outlier.color = NA) +   
-    geom_jitter(width = .1, size = 2, alpha = .5, color = "red")
-```
-
-
-### Há padrões na avaliação ao longo do tempo?
-
-```{r}
-episodes %>% 
-  ggplot(aes(x = season_ep, y = user_rating, color = season)) + 
-  geom_line() + 
-  geom_point() 
-```
-
-Correlações
+Correla????es
 
 ```{r}
 episodes %>% 
@@ -122,7 +116,7 @@ episodes %>%
 
 ```
 
-## Qual o episódio mais detestado? 
+## Qual o epis??dio mais detestado? 
 
 ```{r}
 episodes %>% 
@@ -140,9 +134,9 @@ episodes %>%
     scale_x_continuous(breaks = 1:12)
 ```
 
-### Amor e ódio andam juntos?
+### Amor e ??dio andam juntos?
 
-Quais são episódios que estão entre os mais amados e mais odiados? 
+Quais s??o epis??dios que est??o entre os mais amados e mais odiados? 
 
 ```{r}
 episodes =  episodes %>%

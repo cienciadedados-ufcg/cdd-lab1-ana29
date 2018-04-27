@@ -1,0 +1,57 @@
+---
+title: "Series_atv1"
+author: "Ana Godoy"
+date: "4/25/2018"
+output: html_document
+---
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+theme_set(theme_bw())
+```
+##Faremos uma an??lise das s??ries Black Mirror, Sherlock, American Horror Story e Penny Dreadful
+
+```{r}
+series = read_csv(here("data/series_from_imdb.csv"), 
+                    progress = FALSE,
+                    col_types = cols(.default = col_double(), 
+                                     series_name = col_character(), 
+                                     episode = col_character(), 
+                                     url = col_character(),
+                                     season = col_character())) %>% 
+    filter(series_name %in% c("Black Mirror", "Sherlock", "American Horror Story", "Penny Dreadful"))
+```
+
+## a) Qual das s??ries que voc?? escolheu ?? mais bem avaliada no IMDB? A diferen??a ?? grande? Pequena? Muda de acordo com as temporadas da s??rie? 
+Para responder essa pergunta, primeiro tentaremos visualizar a distribui????o dos votos dos usu??rios e avalia????es por s??rie.
+Podemos ver nos gr??ficos abaixo a distribui????o entre a quantidade de notas e as avalia????es dadas para cada s??rie, podemos tamb??m destacar que Black Mirror e Sherlock possuem uma maior quantidade de avalia????es se compararmos com American Horror Story e Penny Dreadful. 
+
+```{r}
+series %>% 
+  ggplot(aes(x = user_rating, y = user_votes, color = series_name)) + 
+  geom_line() + 
+  geom_point() 
+```
+
+Aqui podemos notar que Sherlock pode ser considerada a mais bem avaliada no IMDB, por possuir maior m??dia de votos e uma melhor m??dia de avalia????es. 
+
+```{r}
+episodes %>% 
+    group_by(series_name) %>% 
+    summarise(media_avaliacao = mean(user_rating),
+              media_votos = mean(user_votes))
+```
+
+##Qual das s??ries que voc?? escolheu tem epis??dios de qualidade mais irregular segundo o IMDB? A diferen??a ?? grande? Pequena?
+
+ Para responder essa pergunta usaremos o coeficiente de varia????o (CV), como obtivemos maiores valores para Penny Dreadful podemos dizer que ela possui um conjunto menos homog??neo de notas (ou seja, elas variam mais).
+ 
+```{r}
+episodes %>% 
+    group_by(series_name) %>% 
+    summarise(media_avaliacao = mean(user_rating),
+              dp_avaliacao = sd(user_rating), coef_variacao = media_avaliacao/dp_avaliacao)
+
+```
+   
