@@ -1,5 +1,5 @@
 ---
-title: "EDA Series"
+title: "EDA Sense8"
 output:
   html_notebook:
     toc: yes
@@ -15,7 +15,10 @@ library(tidyverse)
 library(here)
 theme_set(theme_bw())
 ```
-Analisaremos as s??ries Black Mirror, Sherlock, American Horror Story e Penny Dreadful
+
+Analisaremos os epis??dios da falecida s??rie Sense8. 
+
+Houve duas temporadas: quais foram os melhores epis??dios? A melhor temporada?
 
 ```{r}
 episodes = read_csv(here("data/series_from_imdb.csv"), 
@@ -25,59 +28,43 @@ episodes = read_csv(here("data/series_from_imdb.csv"),
                                      episode = col_character(), 
                                      url = col_character(),
                                      season = col_character())) %>% 
-    filter(series_name %in% c("Black Mirror", "Sherlock", "American Horror Story", "Penny Dreadful"))
+    filter(series_name == "Sense8") 
 ```
 
-## a) Qual das s??ries que voc?? escolheu ?? mais bem avaliada no IMDB?
-Para responder essa pergunta, primeiro tentaremos visualizar a distribui????o dos votos dos usu??rios  por serie.
-Podemos ver no grafico de violino abaixo que a quantidade de votos para a serie "Sherlock" e "Black Mirror" s??o maiores que as de "Penny Dreadful" e "American Horror Story". Ainda assim n??o ?? possivel definir qual delas ?? mais bem avaliada.
+## Quantas avalia????es temos por epis??dio? 
 
+Cada epis??dio foi avaliado por um n??mero diferente de usu??rios do IMDB. Vejamos como ?? essa distribui????o. 
 
 ```{r}
 episodes %>% 
-    ggplot(aes(x = series_name, y = user_votes, color = season)) +
+    ggplot(aes(x = season, y = user_votes)) +
     geom_violin() + 
     geom_jitter(width = .07) 
 ```
 
 
-J?? levando em considera????o as notas dos avaliadores temos o seguinte 
 ```{r}
- episodes %>% 
-    ggplot(aes(x = series_name, y = user_rating)) + 
+episodes %>% 
+    ggplot(aes(x = season_ep, y = user_votes))  + 
+    geom_line() + 
+    facet_wrap(~ season)
+               
+```
+
+A quantidade de avalia????es varia bastante. Exceto pelo primeiro epis??dio, os epis??dios da segunda temporada tem muito menos avalia????es. Talvez porque os dados foram coletados logo depois que a segunda temporada foi lan??ada. 
+
+## Qual a distribui????o da avalia????o dos epis??dios?
+
+```{r}
+episodes %>% 
+    ggplot(aes(x = "Sense8", y = user_rating)) + 
     geom_jitter(width = .05) +
     ylim(5, 10) + 
-    labs(x = "Serie", y = "Avali????o no IMDB")
+    labs(x = "Epis??dios", y = "Avalia????o no IMDB")
 ```
-
-# Aqui fazemos uma rela????o entre a quantidade de votos e as notas 
-```{r}
-episodes %>% 
-  ggplot(aes(x = user_votes, y = user_rating, color = series_name)) + 
-  geom_line() + 
-  geom_point() 
-```
-
-BoxPlot das series com a distribui??ao de notas 10 
-```{r}
-episodes %>% 
-    ggplot(aes(x = series_name, y = r10)) + 
-    geom_boxplot(width = .5, outlier.color = NA) +   
-    geom_jitter(width = .1, size = 2, alpha = .5, color = "blue")
-```
-
-
-
-
 
 ```{r}
 episodes %>% 
-   file(series_name)
-
-```
-```{r}
-episodes %>% 
-    filter(series_name == "Sherlock")%>%
     ggplot(aes(x = user_rating)) + 
     geom_histogram(binwidth = .5, fill = "pink", color = "black") + 
     geom_rug(alpha = .5, size = 1.2)
@@ -103,6 +90,25 @@ episodes %>%
     filter(user_rating == min(user_rating))
 ```
 
+
+## Qual a pior/melhor temporada segundo o IMDB?
+
+```{r}
+episodes %>% 
+    ggplot(aes(x = season, y = user_rating)) + 
+    geom_boxplot(width = .5, outlier.color = NA) +   
+    geom_jitter(width = .1, size = 2, alpha = .5, color = "red")
+```
+
+
+### H?? padr??es na avalia????o ao longo do tempo?
+
+```{r}
+episodes %>% 
+  ggplot(aes(x = season_ep, y = user_rating, color = season)) + 
+  geom_line() + 
+  geom_point() 
+```
 
 Correla????es
 
@@ -161,4 +167,3 @@ episodes %>%
 episodes %>% 
     arrange(-amado_odiado)
 ```
-

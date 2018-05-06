@@ -1,0 +1,63 @@
+---
+title: "Lab01_Parte2"
+author: "Ana Godoy"
+date: "5/6/2018"
+output: html_document
+---
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+require(dplyr)
+
+theme_set(theme_bw())
+```
+##Faremos uma an??lise das s??ries Black Mirror, Sherlock, American Horror Story e Penny Dreadful
+
+```{r}
+series = read_csv(here("data/series_from_imdb.csv"), 
+                    progress = FALSE,
+                    col_types = cols(.default = col_double(), 
+                                     series_name = col_character(), 
+                                     episode = col_character(), 
+                                     url = col_character(),
+                                     season = col_character())) %>% 
+    filter(series_name %in% c("Black Mirror", "Sherlock", "American Horror Story", "Penny Dreadful"))
+```
+## 1) A longevidade das s??ries est?? associada a sua popularidade (n??mero de votos) ?
+Para responder a essa pergunta iremos primeiro separar a quantidade de votos de cada s??rie por temporada;
+
+```{r}
+series %>% 
+    ggplot(aes(x = season, y = user_votes))  + 
+    geom_line() + 
+    facet_wrap(~ series_name)
+               
+```
+Assim podemos observar que uma s??ries curtas como Sherlock possui alta popularidade mesmo tendo somente 4 temporadas. J?? Black Mirror teve um crescimento alto de p??blico no decorrer das suas 3 temporadas. American Horror Story apesar de ser relativamente longa (6 temporadas) possui um p??blico com pouca varia????o, assim como  Penny Dreadful q al??m de possuir um n??mero pequeno de temporadas (3) tem tamb??m um n??mero pequeno de avalia????es.
+Sabendo que Sherlock e Penny Dreadful foram finalizadas enquanto American Horror Story e Black Mirror n??o, n??o ?? poss??vel relacionar a longevidade da s??rie com o n??mero de avalia????es da mesma (popularidade) 
+
+
+##2) Os epis??dios que recebem mais vota????o s??o epis??dios mais amados ou mais odiados ?
+
+Organizamos os dados em um sum??rio contendo o m??ximo valor dos votos de usu??rios separadas por epis??dios das temporadas (season_ep).
+```{r}
+sumarios = series %>% 
+    group_by(series_name, season, season_ep, user_rating, r1, r10) %>% 
+    summarise(max_vote = max(user_votes))
+
+sumarios 
+```
+
+Depois colocaremos esses epis??dios em um gr??fico agrupados pelo nome das s??ries. 
+
+```{r}
+sumarios %>% 
+    ggplot(aes(x = user_rating, y = season_ep, color =series_name )) + 
+    geom_line() + 
+    geom_point() 
+```
+Aqui podemos observar que a varia????o das notas dos epis??dios mais votados se concentra entre 7.0 e 9.5, ou seja, os epis??dios que receberam mais vota????o est??o entre os mais amados (70% de aprova????o ou mais).
+
+
+

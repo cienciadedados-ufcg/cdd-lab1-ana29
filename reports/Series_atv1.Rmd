@@ -37,7 +37,7 @@ series %>%
 Aqui podemos notar que Sherlock pode ser considerada a mais bem avaliada no IMDB, por possuir maior m??dia de votos e uma melhor m??dia de avalia????es. 
 
 ```{r}
-episodes %>% 
+series %>% 
     group_by(series_name) %>% 
     summarise(media_avaliacao = mean(user_rating),
               media_votos = mean(user_votes))
@@ -48,7 +48,7 @@ episodes %>%
  Para responder essa pergunta usaremos o coeficiente de varia????o (CV), como obtivemos maiores valores para Penny Dreadful podemos dizer que ela possui um conjunto menos homog??neo de notas (ou seja, elas variam mais).
  
 ```{r}
-episodes %>% 
+series %>% 
     group_by(series_name) %>% 
     summarise(media_avaliacao = mean(user_rating),
               dp_avaliacao = sd(user_rating), coef_variacao = media_avaliacao/dp_avaliacao)
