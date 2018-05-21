@@ -1,7 +1,7 @@
 ---
-title: "Series_atv1"
+title: "Prob 2_CP 1"
 author: "Ana Godoy"
-date: "4/25/2018"
+date: "21 de maio de 2018"
 output: html_document
 ---
 
@@ -9,10 +9,13 @@ output: html_document
 library(tidyverse)
 library(here)
 library(dygraphs)
+library(ggplot2)
+library(plotly)
+library(DT)
 theme_set(theme_bw())
 ```
-##Faremos uma an??lise das s??ries Black Mirror, Sherlock, American Horror Story e Penny Dreadful
-
+##Faremos uma análise das séries Black Mirror, Sherlock, American Horror Story e Penny Dreadful
+Os dados foram retirados do site IMDB,  e podem ser encontrados nesse repositório (https://github.com/nazareno/imdb-series) juntamente com a explicação da extraão dos dados. 
 ```{r}
 series = read_csv(here("data/series_from_imdb.csv"), 
                     progress = FALSE,
@@ -24,35 +27,39 @@ series = read_csv(here("data/series_from_imdb.csv"),
     filter(series_name %in% c("Black Mirror", "Sherlock", "American Horror Story", "Penny Dreadful"))
 ```
 
-## a) Qual das s??ries que voc?? escolheu ?? mais bem avaliada no IMDB? A diferen??a ?? grande? Pequena? Muda de acordo com as temporadas da s??rie? 
-Para responder essa pergunta, primeiro tentaremos visualizar a distribui????o dos votos dos usu??rios e avalia????es por s??rie.
-Podemos ver nos gr??ficos abaixo a distribui????o entre a quantidade de notas e as avalia????es dadas para cada s??rie, podemos tamb??m destacar que Black Mirror e Sherlock possuem uma maior quantidade de avalia????es se compararmos com American Horror Story e Penny Dreadful. 
+## a) Qual das séries que você escolheu é mais bem avaliada no IMDB? A diferença é grande? Pequena? Muda de acordo com as temporadas da série?
+Para responder essa pergunta, primeiro tentaremos visualizar a distribuição dos votos dos usuários e avaliações por série.
+Podemos ver nos gráficos a distribuição entre a quantidade de notas e as avaliações dadas para cada série, podemos também destacar que Black Mirror e Sherlock possuem uma maior quantidade de avaliações se compararmos com American Horror Story e Penny Dreadful.
 
 ```{r}
 series %>% 
   ggplot(aes(x = user_rating, y = user_votes, color = series_name)) + 
   geom_line() + 
-  geom_point() 
+  geom_point()
+
 ```
 
 Aqui podemos notar que Sherlock pode ser considerada a mais bem avaliada no IMDB, por possuir maior m??dia de votos e uma melhor m??dia de avalia????es. 
 
 ```{r}
-series %>% 
+sumarios = series %>% 
     group_by(series_name) %>% 
     summarise(media_avaliacao = mean(user_rating),
               media_votos = mean(user_votes))
+
+datatable(sumarios, options = list(pageLength = 5))
 ```
 
 ##Qual das s??ries que voc?? escolheu tem epis??dios de qualidade mais irregular segundo o IMDB? A diferen??a ?? grande? Pequena?
 
  Para responder essa pergunta usaremos o coeficiente de varia????o (CV), como obtivemos maiores valores para Penny Dreadful podemos dizer que ela possui um conjunto menos homog??neo de notas (ou seja, elas variam mais).
  
-```{r}
-series %>% 
+```{r echo=FALSE}
+sumarios2 = series %>% 
     group_by(series_name) %>% 
     summarise(media_avaliacao = mean(user_rating),
               dp_avaliacao = sd(user_rating), coef_variacao = media_avaliacao/dp_avaliacao)
+datatable(sumarios2, options = list(pageLength = 5))
 
 ```
    

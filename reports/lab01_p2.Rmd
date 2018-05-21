@@ -41,7 +41,7 @@ Assim podemos observar que uma séries curtas como Sherlock possui alta populari
 Sabendo que Sherlock e Penny Dreadful foram finalizadas enquanto American Horror Story e Black Mirror não, não é possível relacionar a longevidade da série com o número de avaliações da mesma (popularidade) 
 
 ##2) Os episódios que recebem mais votação são episódios mais amados ou mais odiados ?
-
+datatable(iris, options = list(pageLength = 5))
 Organizamos os dados em um sumário contendo o máximo valor dos votos de usuários separadas por episódios das temporadas (season_ep).
 
 ```{r}
