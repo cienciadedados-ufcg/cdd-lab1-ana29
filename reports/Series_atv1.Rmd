@@ -29,29 +29,73 @@ Podemos ver nos gr??ficos abaixo a distribui????o entre a quantidade de notas e 
 
 ```{r}
 series %>% 
+  ggplot(aes(x = series_name, y = user_rating, size = user_votes)) + 
+  geom_jitter(width = .2, alpha = .6) 
+```
+
+
+```{r}
+series %>% 
   ggplot(aes(x = user_rating, y = user_votes, color = series_name)) + 
-  geom_line() + 
   geom_point() 
 ```
 
 Aqui podemos notar que Sherlock pode ser considerada a mais bem avaliada no IMDB, por possuir maior m??dia de votos e uma melhor m??dia de avalia????es. 
 
+> Eu acho que média de votos é uma medidade de popularidade, mas não necessariamente significa boa avaliação, né? Se muita gente assistir e não gostar, haverá muitos votos, mas uma avaliação negativa. 
+
 ```{r}
-episodes %>% 
+series %>% 
     group_by(series_name) %>% 
     summarise(media_avaliacao = mean(user_rating),
               media_votos = mean(user_votes))
 ```
 
+> Tenta sempre mostrar todos os pontos e também visualizar os sumários que você escolheu
+
+```{r}
+agregado = series %>% 
+    group_by(series_name) %>% 
+    summarise(media_avaliacao = mean(user_rating),
+              media_votos = mean(user_votes))
+
+series %>% 
+    ggplot(aes(x = series_name, y = user_rating, size = user_votes)) + 
+    geom_jitter(width = .2, alpha = .2) + 
+    geom_point(data = agregado, 
+               aes(y = media_avaliacao, size = media_votos), 
+               shape = 15,
+               color = "darkorange")
+```
+
+
 ##Qual das s??ries que voc?? escolheu tem epis??dios de qualidade mais irregular segundo o IMDB? A diferen??a ?? grande? Pequena?
 
  Para responder essa pergunta usaremos o coeficiente de varia????o (CV), como obtivemos maiores valores para Penny Dreadful podemos dizer que ela possui um conjunto menos homog??neo de notas (ou seja, elas variam mais).
  
+ > Tua definição de coeficiente de variação estava com numerador/denominador trocados. Isso muda um bocado o resultado: 
+ 
 ```{r}
-episodes %>% 
+series %>% 
     group_by(series_name) %>% 
     summarise(media_avaliacao = mean(user_rating),
-              dp_avaliacao = sd(user_rating), coef_variacao = media_avaliacao/dp_avaliacao)
+              dp_avaliacao = sd(user_rating), 
+              coef_variacao = dp_avaliacao/media_avaliacao) %>% 
+    arrange(-coef_variacao)
 
 ```
    
+```{r}
+series %>% 
+    group_by(series_name) %>% 
+    summarise(media_avaliacao = mean(user_rating),
+              dp_avaliacao = sd(user_rating), 
+              coef_variacao = dp_avaliacao/media_avaliacao) %>% 
+    ggplot(aes(x = reorder(series_name, coef_variacao), y = coef_variacao)) + 
+    geom_col(width = .7, fill = "white", color = "red") + 
+    coord_flip() + 
+    labs(x = "",
+         y = "Coeficiente de variação")
+```
+ 
+ 
