@@ -29,10 +29,12 @@ series = read_csv(here("data/series_from_imdb.csv"),
 
 Para responder a essa pergunta iremos primeiro separar a quantidade de votos de cada série por temporada;
 
+>> Modifiquei o gráfico abaixo para o violin plot pois ele permite observar também o a distribuição dos dados, coisa que o line, neste caso, oculta; mas como tudo nessa revisão, é apenas uma sugestão.
+
 ```{r}
 series %>% 
     ggplot(aes(x = season, y = user_votes))  + 
-    geom_line() + 
+    geom_violin() + 
     facet_wrap(~ series_name)
                
 ```
@@ -48,8 +50,6 @@ Organizamos os dados em um sumário contendo o máximo valor dos votos de usuár
 sumarios = series %>% 
     group_by(series_name, season, season_ep, user_rating, r1, r10) %>% 
     summarise(max_vote = max(user_votes))
-
-sumarios 
 ```
 
 Depois colocaremos esses episódios em um gráfico agrupados pelo nome das séries. 
@@ -58,7 +58,8 @@ Depois colocaremos esses episódios em um gráfico agrupados pelo nome das séri
 sumarios %>% 
     ggplot(aes(x = user_rating, y = season_ep, color = series_name )) + 
     geom_line() + 
-    geom_point() 
+    geom_point() +
+    facet_wrap(~series_name)
 ```
 
 Aqui podemos observar que a variação das notas dos episódios mais votados se concentra entre 7.0 e 9.5, ou seja, os episódios que receberam mais votação estão entre os mais amados (70% de aprovação ou mais).
@@ -81,12 +82,38 @@ sumarios3 %>%
     facet_wrap(~ series_name)
 ```
 
+
+>>  O gráfico abaixo é uma opção ao anterior, que separa por temporadas e mantém cada série em uma linha, para evitar a sobreposição da informação e facilitar a comparação, usando ainda linhas e pontos.
+
+```{r}
+plot_serie <- function(name) {
+    plot <- sumarios3 %>%
+        filter(series_name == name) %>%
+        ggplot(aes(x = season_ep, y =user_votes , color = season)) + 
+        geom_line() + 
+        geom_point() + 
+        facet_wrap(~ season, nrow = 1) +
+        ggtitle(name) +
+        theme(legend.position="none")
+    
+    return(plot)
+}
+p_ahs <- plot_serie("American Horror Story")
+p_bm <- plot_serie("Black Mirror")
+p_pd <- plot_serie("Penny Dreadful")
+p_s <- plot_serie("Sherlock")
+
+cowplot::plot_grid(p_ahs, p_s, p_bm, p_pd, ncol = 1)
+```
+
+
 Podemos observar que séries que possuem uma ordem cronológica mantém uma constância de público, entanto séries que não possuem tem uma grande variação entre os episódios. 
 
 ##3) Existe menos variação entre as notas de série possuem ordem cronológica ?
 
 Separamos novamente os dados, levando em consideração os episódios, as temporadas e as notas dos usuários.
 
+>> A mesma estratégia pode ser usada aqui, ou podemos pensar em um outras visualizações que transmitam as informações desejadas.
 
 ```{r}
 series %>% 
@@ -108,9 +135,22 @@ Para melhor responder a essa pergunta somente verificar os gráficos não é suf
 cv = series %>% 
     group_by(series_name) %>% 
     summarise(media_avaliacao = mean(user_rating),
-              dp_avaliacao = sd(user_rating), cv = media_avaliacao/dp_avaliacao)
-cv
+              dp_avaliacao = sd(user_rating), 
+              cv = media_avaliacao/dp_avaliacao)
+
+knitr::kable(cv)
 ```
+
+>> Pode-se usar a visão tabular ou ainda um gráfico, como segue:
+
+```{r}
+library(reshape2)
+cv.long <- melt(cv, id.vars = c("series_name"))
+cv.long %>%
+    ggplot(aes(x = series_name, y = value, fill = variable)) +
+    geom_bar(stat = "identity", position = "dodge")
+```
+
 
 Por  termos observado anteriormente  que séries que possuem uma ordem cronológica mantém uma constância de público, era esperado que elas também possuíam uma constância nas avaliações, mas vimos que  American Horror Story e  Penny Dreadful possuem os maiores valores de CV (ou seja, dados com uma maior variação) que Black Mirror e Sherlock. Ou seja, apesar de terem uma quantidade mais constante de público, séries com ordem cronológica possuem uma maior variação entre as notas dos usuários.
 
